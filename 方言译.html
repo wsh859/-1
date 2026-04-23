@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方言译 - 粤语/潮汕话 ⇄ 普通话</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a2e;
+            --bg-input: #16162a;
+            --border: #2a2a4a;
+            --border-active: #6c5ce7;
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888aa;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108, 92, 231, 0.3);
+            --success: #00b894;
+            --error: #e17055;
+            --orange: #f39c12;
+            /* 潮汕主题色 */
+            --cs-accent: #2d8a4e;
+            --cs-glow: rgba(45, 138, 78, 0.3);
+            --cs-success: #4ecdc4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(0, 184, 148, 0.05) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+            z-index: -1;
+            transition: background 0.6s;
+        }
+
+        body.mode-teochew::before {
+            background: radial-gradient(ellipse at 30% 20%, rgba(45, 138, 78, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(78, 205, 196, 0.05) 0%, transparent 50%);
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(2%, -2%); }
+            66% { transform: translate(-1%, 1%); }
+        }
+
+        .header { text-align: center; padding: 32px 20px 16px; }
+
+        .logo {
+            font-size: 48px; font-weight: 700;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #00b894);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; letter-spacing: 4px; margin-bottom: 6px;
+            transition: all 0.5s;
+        }
+
+        body.mode-teochew .logo {
+            background: linear-gradient(135deg, #2d8a4e, #4ecdc4, #2d8a4e);
+            -webkit-background-clip: text; background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary); font-size: 13px;
+            letter-spacing: 4px; text-transform: uppercase;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 0 16px 60px; }
+
+        /* ─── 模式切换 ─── */
+        .mode-tabs {
+            display: flex; justify-content: center; gap: 0;
+            margin-bottom: 20px; background: var(--bg-secondary);
+            border-radius: 12px; padding: 4px; max-width: 320px;
+            margin-left: auto; margin-right: auto;
+            border: 1px solid var(--border);
+        }
+
+        .mode-tab {
+            flex: 1; padding: 10px 20px; border: none;
+            background: transparent; color: var(--text-secondary);
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            border-radius: 9px; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        .mode-tab:hover { color: var(--text-primary); }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white; box-shadow: 0 2px 12px var(--accent-glow);
+        }
+
+        body.mode-teochew .mode-tab.active {
+            background: linear-gradient(135deg, #2d8a4e, #4ecdc4);
+            box-shadow: 0 2px 12px var(--cs-glow);
+        }
+
+        .mode-tab .tab-emoji { font-size: 16px; }
+
+        /* ─── 方向切换 ─── */
+        .direction-bar {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; margin-bottom: 20px;
+        }
+
+        .direction-label {
+            font-size: 15px; font-weight: 600; letter-spacing: 1px;
+            padding: 6px 14px; border-radius: 8px; transition: all 0.3s;
+        }
+
+        .direction-label.active-dialect { color: var(--orange); background: rgba(243, 156, 18, 0.12); }
+        .direction-label.active-py { color: var(--success); background: rgba(0, 184, 148, 0.12); }
+        .direction-label.inactive { color: var(--text-secondary); background: transparent; }
+
+        .swap-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--bg-card); border: 2px solid var(--border);
+            color: var(--text-primary); font-size: 18px;
+            cursor: pointer; transition: all 0.4s;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .swap-btn:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: rotate(180deg);
+        }
+
+        body.mode-teochew .swap-btn:hover {
+            border-color: var(--cs-accent);
+            box-shadow: 0 0 20px var(--cs-glow);
+        }
+
+        /* ─── 翻译区 ─── */
+        .translate-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 20px; margin-bottom: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .translate-card:hover { border-color: var(--border-active); }
+
+        body.mode-teochew .translate-card:hover { border-color: var(--cs-accent); }
+
+        .card-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px;
+        }
+
+        .lang-label {
+            font-size: 13px; color: var(--text-secondary);
+            font-weight: 500; letter-spacing: 1px;
+        }
+
+        .lang-label .dot {
+            display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; margin-right: 8px;
+        }
+
+        .dot-dialect { background: var(--orange); }
+        .dot-py { background: var(--success); }
+
+        textarea {
+            width: 100%; min-height: 100px;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px; color: var(--text-primary);
+            font-size: 16px; line-height: 1.6; resize: vertical;
+            transition: border-color 0.3s; font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        body.mode-teochew textarea:focus {
+            border-color: var(--cs-accent);
+            box-shadow: 0 0 0 3px var(--cs-glow);
+        }
+
+        textarea::placeholder { color: var(--text-secondary); }
+
+        .output-area {
+            width: 100%; min-height: 100px;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px; font-size: 16px;
+            line-height: 1.6; color: var(--success);
+            white-space: pre-wrap; word-break: break-word;
+        }
+
+        .output-area.empty { color: var(--text-secondary); font-style: italic; }
+
+        /* ─── 按钮 ─── */
+        .btn-row {
+            display: flex; gap: 10px; margin: 16px 0; justify-content: center; flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 11px 28px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s; display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white; box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        body.mode-teochew .btn-primary {
+            background: linear-gradient(135deg, #2d8a4e, #4ecdc4);
+            box-shadow: 0 4px 15px var(--cs-glow);
+        }
+
+        body.mode-teochew .btn-primary:hover {
+            box-shadow: 0 6px 20px var(--cs-glow);
+        }
+
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-small {
+            background: var(--bg-secondary); color: var(--text-secondary);
+            border: 1px solid var(--border); font-size: 12px; padding: 6px 12px;
+            border-radius: 8px; cursor: pointer; transition: all 0.3s;
+        }
+
+        .btn-small:hover { border-color: var(--accent); color: var(--text-primary); }
+        body.mode-teochew .btn-small:hover { border-color: var(--cs-accent); }
+
+        /* ─── 状态 ─── */
+        .status-bar {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 14px; background: var(--bg-secondary);
+            border-radius: 8px; font-size: 12px;
+            color: var(--text-secondary); margin-bottom: 16px;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--success); flex-shrink: 0;
+        }
+
+        .status-dot.loading { background: #fdcb6e; animation: blink 1s infinite; }
+        .status-dot.error { background: var(--error); }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ─── 历史记录 ─── */
+        .history-section {
+            margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px;
+        }
+
+        .history-title {
+            font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .history-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 16px; margin-bottom: 8px;
+            font-size: 14px; cursor: pointer; transition: border-color 0.3s;
+        }
+
+        .history-item:hover { border-color: var(--border-active); }
+        body.mode-teochew .history-item:hover { border-color: var(--cs-accent); }
+
+        .history-item .arrow { color: var(--text-secondary); margin: 0 8px; }
+        .history-item .src { color: var(--text-secondary); }
+        .history-item .dst { color: var(--success); }
+
+        .history-item .meta {
+            font-size: 11px; color: var(--text-secondary); margin-top: 4px;
+        }
+
+        .history-item .mode-tag {
+            display: inline-block; padding: 1px 6px; border-radius: 4px;
+            font-size: 10px; margin-left: 6px;
+        }
+        .mode-tag.tag-yue { background: rgba(243, 156, 18, 0.15); color: var(--orange); }
+        .mode-tag.tag-cs { background: rgba(45, 138, 78, 0.15); color: #4ecdc4; }
+
+        /* ─── 语音输入 ─── */
+        .mic-btn {
+            position: relative; width: 32px; height: 32px;
+            border-radius: 50%; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-secondary);
+            font-size: 14px; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mic-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+        body.mode-teochew .mic-btn:hover { border-color: var(--cs-accent); }
+        .mic-btn.recording {
+            border-color: #e74c3c; color: #e74c3c;
+            animation: micPulse 1s infinite;
+        }
+        .mic-btn.disabled {
+            opacity: 0.35; cursor: not-allowed; pointer-events: none;
+        }
+        @keyframes micPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(231,76,60,0); }
+        }
+
+        /* ─── 加载 ─── */
+        .spinner {
+            display: inline-block; width: 14px; height: 14px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        body.mode-teochew .spinner { border-top-color: var(--cs-accent); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── 音色选择 ─── */
+        .voice-picker {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 14px; flex-wrap: wrap;
+        }
+
+        .voice-picker-label {
+            font-size: 12px; color: var(--text-secondary);
+        }
+
+        .voice-chips {
+            display: flex; gap: 6px;
+        }
+
+        .voice-chip {
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); transition: all 0.25s;
+        }
+
+        .voice-chip:hover { color: var(--text-primary); }
+
+        .voice-chip.active {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-color: transparent; color: white;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        body.mode-teochew .voice-chip.active {
+            background: linear-gradient(135deg, #2d8a4e, #4ecdc4);
+            box-shadow: 0 2px 8px var(--cs-glow);
+        }
+
+        /* ─── 词汇统计 ─── */
+        .dict-info {
+            text-align: center; padding: 16px;
+            font-size: 12px; color: var(--text-secondary);
+            border-top: 1px solid var(--border); margin-top: 24px;
+        }
+
+        /* ─── 响应式 ─── */
+        @media (max-width: 640px) {
+            .logo { font-size: 36px; }
+            .container { padding: 0 12px 40px; }
+            .translate-card { padding: 14px; }
+            .btn { padding: 10px 18px; font-size: 13px; }
+            .mode-tabs { max-width: 260px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">方言译</div>
+    <div class="subtitle">Dialect ⇄ Mandarin</div>
+</header>
+
+<div class="container">
+    <!-- 模式切换 -->
+    <div class="mode-tabs">
+        <button class="mode-tab active" id="tabYue" onclick="switchMode('cantonese')">
+            <span class="tab-emoji">🟠</span> 粤语
+        </button>
+        <button class="mode-tab" id="tabCs" onclick="switchMode('teochew')">
+            <span class="tab-emoji">🟢</span> 潮汕话
+        </button>
+    </div>
+
+    <!-- 方向 -->
+    <div class="direction-bar">
+        <span class="direction-label active-dialect" id="srcLabel">粤语</span>
+        <button class="swap-btn" onclick="swapDir()" title="切换方向">⇄</button>
+        <span class="direction-label inactive" id="dstLabel">普通话</span>
+    </div>
+
+    <!-- 音色选择 -->
+    <div class="voice-picker" id="voicePicker">
+        <span class="voice-picker-label">🎙️ 方言音色：</span>
+        <div class="voice-chips" id="voiceChips"></div>
+    </div>
+
+    <!-- 状态 -->
+    <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">就绪 · AI翻译模式</span>
+    </div>
+
+    <!-- 输入 -->
+    <div class="translate-card">
+        <div class="card-header">
+            <span class="lang-label"><span class="dot dot-dialect" id="inputDot"></span><span id="inputLabel">粤语输入</span></span>
+            <div style="display:flex; gap:6px;">
+                <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="语音输入">🎤</button>
+                <button class="btn-small" onclick="pasteText()" title="粘贴">📋 粘贴</button>
+                <button class="btn-small" onclick="clearAll()">清空</button>
+            </div>
+        </div>
+        <textarea id="inputText" placeholder="输入粤语文字，例如：你食咗饭未呀？"></textarea>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-primary" id="translateBtn" onclick="doTranslate()">翻译 →</button>
+    </div>
+
+    <!-- 输出 -->
+    <div class="translate-card">
+        <div class="card-header">
+            <span class="lang-label"><span class="dot dot-py" id="outputDot"></span><span id="outputLabel">普通话翻译</span></span>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-small" onclick="copyResult()" title="复制">📋 复制</button>
+                <button class="btn-small" onclick="speakResult()" title="播报" id="ttsBtn">🔊 播报</button>
+            </div>
+        </div>
+        <div class="output-area empty" id="outputText">翻译结果将在这里显示...</div>
+    </div>
+
+    <!-- 历史 -->
+    <div class="history-section" id="historySection" style="display:none;">
+        <div class="history-title">
+            <span>📝 最近翻译</span>
+            <button class="btn-small" onclick="clearHistory()">清空记录</button>
+        </div>
+        <div id="historyList"></div>
+    </div>
+
+    <div class="dict-info">
+        📖 AI智能翻译 · 内置词典后备：粤语 600+ 条 · 潮汕话 600+ 条<br>
+        <span style="font-size:11px; opacity:0.7;">AI翻译 + 方言语音播报需启动 tts_proxy.py · 普通话/粤语语音输入需联网</span>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  粤→普 词典
+// ═══════════════════════════════════════════
+const YUE2PY = {
+    // 代词
+    "佢哋": "他们", "我哋": "我们", "你哋": "你们",
+    "佢": "他", "嘢": "东西", "咁": "这么",
+    "点解": "为什么", "点样": "怎样",
+    "边度": "哪里", "边个": "谁", "几多": "多少", "几时": "什么时候",
+    "咩": "什么", "嗰度": "那里", "呢度": "这里",
+    "嗰个": "那个", "呢个": "这个", "而家": "现在",
+    // 动词
+    "睇": "看", "讲": "说", "谂": "想", "畀": "给",
+    "攞": "拿", "揾": "找", "倾": "聊",
+    "瞓觉": "睡觉", "瞓": "睡",
+    "食饭": "吃饭", "饮茶": "喝茶", "返屋企": "回家",
+    "返工": "上班", "收工": "下班", "返学": "上学", "放学": "下课",
+    "出嚟": "出来", "入去": "进去",
+    "买嘢": "买东西", "卖嘢": "卖东西",
+    "睇戏": "看电影", "玩游戏机": "玩游戏",
+    "帮手": "帮忙", "搞掂": "搞定", "搞唔掂": "搞不定",
+    "出粮": "发工资",
+    // 形容词
+    "靓": "漂亮", "得意": "可爱", "衰": "坏", "攰": "累",
+    "得閒": "有空", "唔得閒": "没空",
+    "肚饿": "饿", "口渴": "渴",
+    "靓仔": "帅哥", "靓女": "美女",
+    "大佬": "大哥", "老细": "老板",
+    "好耐": "很久", "差唔多": "差不多",
+    "好多": "很多", "少少": "一点点",
+    // 否定 / 助词
+    "唔紧要": "没关系", "唔好意思": "不好意思",
+    "唔好": "不要", "唔使": "不用", "唔该": "谢谢/麻烦",
+    "对唔住": "对不起",
+    "唔知": "不知道", "唔系": "不是", "唔钟意": "不喜欢",
+    "可唔可以": "可不可以", "得唔得": "行不行", "係咪": "是不是",
+    "咗": "了", "嘅话": "的话",
+    // 名词
+    "今日": "今天", "听日": "明天", "琴日": "昨天", "后日": "后天",
+    "朝早": "早上", "晏昼": "中午", "夜晚": "晚上",
+    "细路": "小孩", "细佬": "弟弟", "家姐": "姐姐",
+    "阿妈": "妈妈", "阿爸": "爸爸",
+    "屋企": "家", "巴士": "公交车", "的士": "出租车",
+    "人工": "工资", "落雨": "下雨", "天光": "天亮",
+    // 连接词 / 副词
+    "但系": "但是", "嘅": "的", "喺": "在",
+    "嚟": "来", "仲": "还", "亦": "也",
+    "阵间": "等一下", "一齐": "一起",
+    "仲有": "还有", "冇问题": "没问题",
+    // 单字
+    "唔": "不", "冇": "没有", "食": "吃", "饮": "喝",
+    "行": "走", "企": "站", "知": "知道",
+    "啱": "对", "细": "小", "冻": "冷",
+    "快啲": "快点",
+    // 常用短句
+    "食咗饭未": "吃饭了吗", "食咗未": "吃了吗",
+    "做咩": "做什么", "做乜": "做什么",
+    "好得意": "好可爱", "好靓": "好漂亮",
+    "好攰": "好累", "好肚饿": "好饿",
+    "好衰": "好坏", "咪搞": "别搞",
+    "攞命": "要命", "搏命": "拼命",
+    "多谢": "谢谢", "拜拜": "再见", "你好": "你好",
+    "钟意": "喜欢", "中意": "喜欢", "憎": "讨厌",
+};
+
+// 粤→普 反向词典
+const PY2YUE = {};
+for (const [c, m] of Object.entries(YUE2PY)) {
+    const val = m.split('/')[0].trim();
+    if (!PY2YUE[val] || c.length > PY2YUE[val].length) {
+        PY2YUE[val] = c;
+    }
+}
+Object.assign(PY2YUE, {
+    "不": "唔", "没有": "冇", "的": "嘅", "了": "咗", "在": "喺",
+    "他": "佢", "他们": "佢哋", "我们": "我哋", "你们": "你哋",
+    "东西": "嘢", "为什么": "点解", "怎样": "点样",
+    "哪里": "边度", "谁": "边个", "多少": "几多", "什么时候": "几时",
+    "什么": "咩", "吃": "食", "喝": "饮", "睡": "睡",
+    "走": "行", "站": "企", "看": "睇", "说": "讲", "想": "谂",
+    "给": "畀", "拿": "攞", "找": "揾", "聊": "倾",
+    "上班": "返工", "下班": "收工", "上学": "返学", "下课": "放学",
+    "今天": "今日", "明天": "听日", "昨天": "琴日", "后天": "后日",
+    "早上": "朝早", "中午": "晏昼", "晚上": "夜晚",
+    "小孩": "细路", "弟弟": "细佬", "姐姐": "家姐",
+    "妈妈": "阿妈", "爸爸": "阿爸",
+    "漂亮": "靓", "可爱": "得意", "坏": "衰", "累": "攰",
+    "有空": "得閒", "没空": "唔得閒",
+    "饿": "肚饿", "渴": "口渴",
+    "下雨": "落雨", "天亮": "天光",
+    "睡觉": "瞓觉", "回家": "返屋企",
+    "吃饭": "食饭", "喝茶": "饮茶",
+    "买东西": "买嘢", "卖东西": "卖嘢",
+    "看电影": "睇戏", "玩游戏": "玩游戏机",
+    "帮忙": "帮手", "搞定": "搞掂", "搞不定": "搞唔掂",
+    "发工资": "出粮", "工资": "人工",
+    "帅哥": "靓仔", "美女": "靓女",
+    "大哥": "大佬", "老板": "老细",
+    "家": "屋企", "公交车": "巴士", "出租车": "的士",
+    "不要": "唔好", "不用": "唔使", "没关系": "唔紧要",
+    "不好意思": "唔好意思", "对不起": "对唔住",
+    "不知道": "唔知", "不是": "唔系", "不喜欢": "唔钟意",
+    "可不可以": "可唔可以", "行不行": "得唔得", "是不是": "係咪",
+    "谢谢": "唔该", "再见": "拜拜",
+    "喜欢": "钟意", "讨厌": "憎",
+    "那里": "嗰度", "这里": "呢度", "那个": "嗰个", "这个": "呢个",
+    "现在": "而家", "等一下": "阵间", "一起": "一齐",
+    "还": "仲", "也": "亦", "来": "嚟",
+    "但是": "但系", "的话": "嘅话",
+    "差不多": "差唔多", "很多": "好多", "一点点": "少少",
+    "还有": "仲有", "没问题": "冇问题",
+    "要命": "攞命", "拼命": "搏命",
+    "快点": "快啲", "小": "细", "冷": "冻",
+    "对": "啱", "知道": "知",
+});
+
+// ═══════════════════════════════════════════
+//  潮→普 词典
+// ═══════════════════════════════════════════
+const CS2PY = {
+    // 代词
+    "阮": "我们", "俺": "我/我们",
+    "汝": "你", "恁": "你们", "伊": "他/她",
+    "伊人": "他/她", "自家": "自己",
+    "逐个": "每个人", "乜个": "什么", "底个": "哪个",
+    "怎生": "怎样", "做尼": "为什么", "做泥": "为什么",
+    "底块": "哪里", "许块": "那里", "许搭": "那里",
+    "只块": "这里", "只搭": "这里", "只撮": "这些",
+    "许撮": "那些", "许个": "那个", "只个": "这个",
+    "物个": "什么", "别人": "别人",
+    "无侬": "没人", "有侬": "有人",
+    // 时间
+    "今旦": "今天", "明旦": "明天", "昨旦": "昨天",
+    "大后日": "大后天",
+    "早起": "早上", "晏昼": "中午", "下昼": "下午",
+    "暗暝": "晚上", "暝仔": "晚上", "暝昏": "黄昏",
+    "日昼": "中午", "日斗": "中午",
+    "上无": "上午", "下无": "下午",
+    "旧年": "去年", "年尾": "年底",
+    "早起头": "一大早", "日头": "太阳",
+    "猛下": "快点",
+    "下日": "改天", "即久": "现在", "即阵": "现在",
+    "趂早": "趁早", "透早": "大清早",
+    "遘": "到", "遘现在": "到现在",
+    // 动词
+    "食": "吃", "呾": "说", "睇": "看",
+    "行": "走", "走": "跑", "徛": "站",
+    "跍": "蹲", "泅": "游泳", "沕": "潜水",
+    "拍": "打", "掠": "捉", "揾": "找",
+    "擿": "扔", "搵": "蘸", "沃": "浇淋",
+    "潠": "喷水", "摵": "掉落", "囥": "藏",
+    "坫": "躲藏", "薅": "拔草", "烊": "融化",
+    "幔": "披上去", "敨": "解开", "捼": "搓",
+    "捘": "拧", "搑": "推", "掿": "握",
+    "揙": "掴", "摝": "摇", "擎": "举",
+    "擘": "掰开", "揞": "捂住", "蹃": "用脚蹬",
+    "婓": "四处兜", "蹘": "溜", "刜": "揍",
+    "椓": "敲", "蠫": "砍", "汏": "淘洗",
+    "熻": "蒸", "烙": "煎", "焯": "开水滚",
+    "煠": "煮", "煏": "烤", "税": "租",
+    "刣": "杀", "睒": "迅速地看",
+    "惜": "疼爱/亲昵", "悦": "喜欢",
+    "诐": "说/讲", "嚷": "吼/喊",
+    "惊": "害怕", "专爱": "故意",
+    "佮": "和/跟", "分": "给", "乞": "给/被",
+    "共": "和/跟", "相辅": "帮忙",
+    "饲": "养", "教示": "教育", "回味": "回忆",
+    "有影": "真的", "无影": "假的",
+    "应承": "答应", "相信": "相信",
+    "放屎": "大便", "放尿": "小便",
+    "洗浴": "洗澡", "洗面": "洗脸",
+    "目涩": "困了", "倒眠": "睡觉", "颐": "睡觉",
+    "睏": "睡觉", "转来": "回来",
+    "入来": "进来", "起厝": "建房",
+    // 名词
+    "糜": "粥", "箸": "筷子", "鼎": "锅",
+    "调羹": "汤匙", "衫": "衣服", "褛": "外套",
+    "鞋拖": "拖鞋", "雨遮": "雨伞", "番枧": "肥皂",
+    "饼药粉": "洗衣粉", "扫手": "扫把",
+    "银": "钱", "个银": "一块钱",
+    "四人头": "一百元", "一粒": "一万元",
+    "朥": "猪油", "电毛": "烫发",
+    "纸鹞": "风筝", "辇": "车轮",
+    "东司": "厕所", "火油": "煤油",
+    "床墘": "床边", "檨": "芒果",
+    "蕹菜": "空心菜", "飞薐": "菠菜",
+    "蔹椒": "辣椒", "腈肉": "瘦肉",
+    "肉脞": "肉末", "秫米": "糯米",
+    "铰刀": "剪刀", "目": "眼睛", "目汁": "眼泪",
+    "毛": "头发", "尻川": "屁股", "酒碹": "酒窝",
+    "腰龙骨": "尾骨", "胡螓": "苍蝇",
+    "蛓毛虫": "毛毛虫", "香橼": "佛手",
+    "鬃毛": "毛/头发", "喙": "嘴巴",
+    "鼻": "鼻子", "耳": "耳朵",
+    "脚": "脚/腿", "头壳": "头",
+    "喙须": "胡子", "舌": "舌头",
+    "喙水": "口水", "心肝": "心脏",
+    "骹": "脚",
+    // 形容词
+    "雅": "漂亮/美", "猛": "快", "细": "小",
+    "芳": "香", "烧": "热", "凊": "凉",
+    "光": "亮", "阔": "宽", "狭": "窄",
+    "幼": "细嫩/细",
+    "平": "便宜",
+    "饥": "饿",
+    "生分": "陌生", "熟似": "熟悉",
+    "闹热": "热闹", "静": "安静", "清彩": "干净",
+    "鏖糟": "肮脏", "灱": "干", "沞": "湿",
+    "翘楚": "聪明/厉害", "硬水": "高水准",
+    "柴戆": "糊涂/不懂", "白傻": "白痴",
+    "青盲牛": "文盲", "憨": "傻/笨",
+    "戆": "傻", "厚划": "难受", "浮火": "上火",
+    "激血": "生气", "激心": "焦虑/烦躁",
+    "迫性": "暴躁", "无变": "受不了",
+    "舒坦": "舒服", "欢喜": "高兴",
+    "苦恼": "烦恼", "畅": "舒服/开心",
+    // 否定/助词/虚词
+    "无": "没有/不", "唔": "不", "未": "还没",
+    "迈": "不要", "袂": "不会",
+    "免": "不用/不必", "敢": "敢", "敢是": "是不是",
+    "卜": "要", "爱": "要",
+    "着": "对/应该",
+    "哩": "呢/的", "啰": "语气词",
+    "无相干": "没关系", "对唔住": "对不起",
+    "齐谢": "谢谢", "劳心": "辛苦了",
+    "唔知": "不知道", "唔好": "不要",
+    "唔通": "难道", "唔得": "不行",
+    "无变论": "受不了", "无影无只": "没这回事",
+    "迈照生": "别这样",
+    // 常用短句
+    "汝食未": "你吃了吗", "食饭未": "吃饭了吗",
+    "汝好": "你好", "多谢": "谢谢", "再会": "再见",
+    "拜拜": "再见",
+    "好否": "好不好", "知影": "知道",
+    "呾唔北": "说不清", "有底个": "有什么",
+    "敢会": "会不会", "做呢好": "怎么办",
+    "互": "被", "互人": "被人",
+    // 其他
+    "落雨": "下雨", "起风": "刮风",
+    "天时": "天气", "落雪": "下雪",
+    "打雷": "打雷", "闪电": "闪电",
+    "大水": "洪水", "过细": "太小心",
+    "闲话": "聊天", "呾闲话": "聊天",
+    "诐三国": "摆龙门阵", "哗甫": "吹牛",
+    "食诐唔落": "道不同不相为谋", "托浪脬": "拍马屁",
+    "散嚷": "胡说", "物事": "东西",
+    "做工课": "做作业", "睇书": "看书",
+    "买物事": "买东西", "食桌": "赴宴",
+    "胶己人": "自己人", "食茶": "喝茶",
+    "死人": "糟糕", "惨": "惨/糟糕",
+};
+
+// 潮→普 反向词典
+const PY2CS = {};
+for (const [c, m] of Object.entries(CS2PY)) {
+    const vals = m.split('/');
+    for (const val of vals) {
+        const v = val.trim();
+        if (!PY2CS[v] || c.length > PY2CS[v].length) {
+            PY2CS[v] = c;
+        }
+    }
+}
+Object.assign(PY2CS, {
+    "我": "我", "你": "汝", "他": "伊", "她": "伊",
+    "我们": "阮", "你们": "恁", "他们": "伊人",
+    "自己": "自家", "什么": "乜个", "哪个": "底个",
+    "怎样": "怎生", "为什么": "做尼", "哪里": "底块",
+    "那里": "许块", "这里": "只块", "这些": "只撮",
+    "那些": "许撮", "那个": "许个", "这个": "只个",
+    "没人": "无侬", "有人": "有侬",
+    "今天": "今旦", "明天": "明旦", "昨天": "昨旦",
+    "后天": "后日", "早上": "早起", "中午": "晏昼",
+    "下午": "下昼", "晚上": "暗暝", "现在": "即阵",
+    "快点": "猛下", "快": "猛", "去年": "旧年",
+    "吃饭": "食饭", "吃了吗": "食未", "喝水": "食水",
+    "说": "呾", "说话": "呾话", "看": "睇",
+    "走": "行", "跑": "走", "站": "徛", "蹲": "跍",
+    "游泳": "泅", "打": "拍", "捉": "掠", "找": "揾",
+    "扔": "擿", "藏": "囥", "躲": "坫",
+    "浇": "沃", "蒸": "熻", "煎": "烙", "煮": "煠",
+    "烤": "煏", "杀": "刣", "养": "饲",
+    "喜欢": "悦", "疼爱": "惜",
+    "害怕": "惊", "故意": "专爱", "帮忙": "相辅",
+    "给": "分", "和": "佮", "跟": "佮",
+    "粥": "糜", "筷子": "箸", "锅": "鼎",
+    "衣服": "衫", "外套": "褛", "拖鞋": "鞋拖",
+    "雨伞": "雨遮", "肥皂": "番枧", "洗衣粉": "饼药粉",
+    "扫把": "扫手", "钱": "银", "猪油": "朥",
+    "头发": "毛", "眼睛": "目", "眼泪": "目汁",
+    "屁股": "尻川", "嘴巴": "喙", "鼻子": "鼻",
+    "耳朵": "耳", "胡子": "喙须", "口水": "喙水",
+    "漂亮": "雅", "帅": "雅", "美丽": "雅",
+    "好": "好", "坏": "孬", "小": "细",
+    "香": "芳", "热": "烧", "凉": "凊",
+    "暗": "暗", "亮": "光", "宽": "阔", "窄": "狭",
+    "便宜": "平", "饱": "饱",
+    "饿": "饥", "渴": "渴", "干净": "清彩",
+    "脏": "鏖糟", "干": "灱", "湿": "沞",
+    "聪明": "翘楚", "糊涂": "柴戆", "傻": "憨",
+    "厉害": "硬", "舒服": "畅", "高兴": "欢喜",
+    "生气": "激血", "烦躁": "激心", "热闹": "闹热",
+    "安静": "静", "陌生": "生分", "熟悉": "熟似",
+    "没有": "无", "不": "唔", "还没": "未",
+    "不要": "迈", "不用": "免", "不会": "袂",
+    "不知道": "唔知", "对不起": "对唔住",
+    "谢谢": "齐谢", "辛苦了": "劳心",
+    "没关系": "无相干", "再见": "再会",
+    "你好": "汝好", "你好吗": "汝好无",
+    "下雨": "落雨", "刮风": "起风", "天气": "天时",
+    "聊天": "呾闲话", "吹牛": "哗甫",
+    "买东西": "买物事", "自己人": "胶己人",
+    "洗澡": "洗浴", "洗脸": "洗面", "睡觉": "睏",
+    "回来": "转来", "进来": "入来",
+    "芒果": "檨", "空心菜": "蕹菜", "菠菜": "飞薐",
+    "辣椒": "蔹椒", "瘦肉": "腈肉", "糯米": "秫米",
+    "剪刀": "铰刀", "苍蝇": "胡螓", "风筝": "纸鹞",
+    "花生": "涂豆", "地瓜": "番薯", "玉米": "幼黍",
+});
+
+// ═══════════════════════════════════════════
+//  词典表（按模式查找）
+// ═══════════════════════════════════════════
+const DICTS = {
+    cantonese: {
+        d2p: YUE2PY,
+        p2d: PY2YUE,
+        dialectName: '粤语',
+        d2pDir: 'cantonese_to_mandarin',
+        p2dDir: 'mandarin_to_cantonese',
+        historyKey: 'fangyan_history',
+        placeholder: '输入粤语文字，例如：你食咗饭未呀？',
+        placeholderReverse: '输入普通话文字，例如：你吃饭了吗？',
+        ttsVoices: [
+            { voice: 'Rocky', label: 'Rocky（男·阿强）' },
+            { voice: 'Kiki',  label: 'Kiki（女·阿清）' },
+        ],
+        defaultVoiceIdx: 0,
+    },
+    teochew: {
+        d2p: CS2PY,
+        p2d: PY2CS,
+        dialectName: '潮汕话',
+        d2pDir: 'teochew_to_mandarin',
+        p2dDir: 'mandarin_to_teochew',
+        historyKey: 'fangyan_history',
+        placeholder: '输入潮汕话文字，例如：汝食饭未？',
+        placeholderReverse: '输入普通话文字，例如：你吃饭了吗？',
+        ttsVoices: [
+            { voice: 'Roy', label: 'Roy（闽南-阿杰）' },
+        ],
+        defaultVoiceIdx: 0,
+    }
+};
+
+// ═══════════════════════════════════════════
+//  状态
+// ═══════════════════════════════════════════
+let currentMode = 'cantonese';
+let direction = 'dialect_to_mandarin'; // dialect_to_mandarin | mandarin_to_dialect
+let history = JSON.parse(localStorage.getItem('fangyan_history') || '[]');
+let currentAudio = null;
+// 每个模式当前选中的音色下标
+const voiceIdx = { cantonese: 0, teochew: 0 };
+
+function getActiveVoice() {
+    const dict = DICTS[currentMode];
+    return dict.ttsVoices[voiceIdx[currentMode]].voice;
+}
+
+// ═══════════════════════════════════════════
+//  模式切换
+// ═══════════════════════════════════════════
+function switchMode(mode) {
+    currentMode = mode;
+    direction = 'dialect_to_mandarin';
+
+    // 更新 Tab
+    document.getElementById('tabYue').classList.toggle('active', mode === 'cantonese');
+    document.getElementById('tabCs').classList.toggle('active', mode === 'teochew');
+
+    // 更新 body 主题
+    document.body.classList.toggle('mode-teochew', mode === 'teochew');
+
+    // 清空输出
+    const out = document.getElementById('outputText');
+    out.textContent = '翻译结果将在这里显示...';
+    out.classList.add('empty');
+    document.getElementById('inputText').value = '';
+
+    updateUI();
+    setStatus(`已切换到${DICTS[mode].dialectName}模式 · AI翻译`);
+}
+
+// ═══════════════════════════════════════════
+//  方向切换
+// ═══════════════════════════════════════════
+function swapDir() {
+    direction = direction === 'dialect_to_mandarin'
+        ? 'mandarin_to_dialect' : 'dialect_to_mandarin';
+    updateUI();
+}
+
+function updateUI() {
+    const dict = DICTS[currentMode];
+    const isD2P = direction === 'dialect_to_mandarin';
+
+    document.getElementById('srcLabel').textContent = isD2P ? dict.dialectName : '普通话';
+    document.getElementById('srcLabel').className = 'direction-label ' + (isD2P ? 'active-dialect' : 'active-py');
+    document.getElementById('dstLabel').textContent = isD2P ? '普通话' : dict.dialectName;
+    document.getElementById('dstLabel').className = 'direction-label inactive';
+
+    document.getElementById('inputDot').className = 'dot ' + (isD2P ? 'dot-dialect' : 'dot-py');
+    document.getElementById('outputDot').className = 'dot ' + (isD2P ? 'dot-py' : 'dot-dialect');
+    document.getElementById('inputLabel').textContent = isD2P ? dict.dialectName + '输入' : '普通话输入';
+    document.getElementById('outputLabel').textContent = isD2P ? '普通话翻译' : dict.dialectName + '翻译';
+
+    document.getElementById('inputText').placeholder = isD2P
+        ? dict.placeholder
+        : dict.placeholderReverse;
+
+    // 播报按钮文字
+    document.getElementById('ttsBtn').textContent = isD2P ? '🔊 普通话播报' : '🔊 方言播报';
+
+    // 音色 chips：只在"普→方言"方向显示（即将播报方言时才需要选）
+    const picker = document.getElementById('voicePicker');
+    const chipsEl = document.getElementById('voiceChips');
+    if (!isD2P) {
+        picker.style.display = 'flex';
+        chipsEl.innerHTML = dict.ttsVoices.map((v, i) =>
+            `<button class="voice-chip ${i === voiceIdx[currentMode] ? 'active' : ''}"
+                onclick="selectVoice(${i})">${v.label}</button>`
+        ).join('');
+    } else {
+        picker.style.display = 'none';
+    }
+
+    const out = document.getElementById('outputText');
+    out.textContent = '翻译结果将在这里显示...';
+    out.classList.add('empty');
+
+    // 更新麦克风按钮状态
+    updateMicBtn();
+}
+
+// ═══════════════════════════════════════════
+//  翻译引擎（AI + 词典后备）
+// ═══════════════════════════════════════════
+// ── 代理地址配置 ──
+// 本地运行时使用 localhost:8765，云端部署后替换为 Render 地址
+const PROXY_URL = (function() {
+    // 优先使用 URL 参数：?proxy=https://your-app.onrender.com
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('proxy')) return params.get('proxy').replace(/\/$/, '');
+    // 其次使用同域（GitHub Pages + Render 同域不可能，留给本地）
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        return 'http://localhost:8765';
+    }
+    // 云端：写死 Render 地址（部署后填入）
+    return 'https://FANGYAN-PROXY.onrender.com';
+})();
+
+// 服务唤醒（Render 免费版有冷启动，预先 ping 一下）
+(function pingProxy() {
+    fetch(PROXY_URL + '/ping', { signal: AbortSignal.timeout(12000) })
+        .then(r => r.json())
+        .then(() => setStatus('服务就绪 · AI翻译模式'))
+        .catch(() => setStatus('服务启动中，首次可能需等待10秒...', 'loading'));
+})();
+
+// 词典翻译（离线后备）
+function dictTranslate(text, dir) {
+    const dict = DICTS[currentMode];
+    const map = dir === 'dialect_to_mandarin' ? dict.d2p : dict.p2d;
+    const sorted = Object.entries(map).sort((a, b) => b[0].length - a[0].length);
+    let result = text;
+    for (const [src, dst] of sorted) {
+        result = result.split(src).join(dst);
+    }
+    return result;
+}
+
+// AI 翻译（主引擎）
+async function aiTranslate(text, dir) {
+    const resp = await fetch(`${PROXY_URL}/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            text: text,
+            direction: dir,
+            dialect: currentMode
+        })
+    });
+    if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || `服务返回错误 ${resp.status}`);
+    }
+    const data = await resp.json();
+    return data.result;
+}
+
+function doTranslate() {
+    const text = document.getElementById('inputText').value.trim();
+    if (!text) { setStatus('请输入文字', 'error'); return; }
+
+    const btn = document.getElementById('translateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> 翻译中...';
+    setStatus('正在翻译（AI）...', 'loading');
+
+    // 先尝试 AI 翻译
+    aiTranslate(text, direction)
+        .then(result => {
+            const out = document.getElementById('outputText');
+            out.textContent = result;
+            out.classList.remove('empty');
+            btn.disabled = false;
+            btn.innerHTML = '翻译 →';
+            setStatus('翻译完成 · AI模式');
+            addHistory(text, result);
+        })
+        .catch(err => {
+            console.warn('AI翻译失败，回退到词典:', err);
+            // AI 失败 → 用词典后备
+            const result = dictTranslate(text, direction);
+            const out = document.getElementById('outputText');
+            out.textContent = result;
+            out.classList.remove('empty');
+            btn.disabled = false;
+            btn.innerHTML = '翻译 →';
+            if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                setStatus('代理未启动，已用词典翻译（离线）', 'error');
+            } else {
+                setStatus('AI翻译失败，已用词典翻译 · ' + err.message, 'error');
+            }
+            addHistory(text, result);
+        });
+}
+
+function clearAll() {
+    document.getElementById('inputText').value = '';
+    const out = document.getElementById('outputText');
+    out.textContent = '翻译结果将在这里显示...';
+    out.classList.add('empty');
+    setStatus('已清空');
+}
+
+async function pasteText() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('inputText').value = text;
+        setStatus('已粘贴');
+    } catch {
+        setStatus('无法读取剪贴板，请手动粘贴', 'error');
+    }
+}
+
+function copyResult() {
+    const text = document.getElementById('outputText').textContent;
+    if (!text || text === '翻译结果将在这里显示...') return;
+    navigator.clipboard.writeText(text).then(() => setStatus('已复制到剪贴板'));
+}
+
+// ═══════════════════════════════════════════
+//  语音输入（STT）
+// ═══════════════════════════════════════════
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isRecording = false;
+
+// 检测当前输入语言
+function getInputLang() {
+    const dict = DICTS[currentMode];
+    const isD2P = direction === 'dialect_to_mandarin';
+    if (isD2P) {
+        // 方言输入
+        if (currentMode === 'cantonese') return 'zh-HK';
+        if (currentMode === 'teochew') return null; // 潮汕话不支持
+    }
+    return 'zh-CN'; // 普通话输入
+}
+
+function updateMicBtn() {
+    const btn = document.getElementById('micBtn');
+    const lang = getInputLang();
+    if (!SpeechRecognition) {
+        btn.classList.add('disabled');
+        btn.title = '当前浏览器不支持语音输入';
+        return;
+    }
+    if (lang === null) {
+        btn.classList.add('disabled');
+        btn.title = '潮汕话语音识别暂不支持';
+        return;
+    }
+    btn.classList.remove('disabled');
+    btn.classList.toggle('recording', isRecording);
+    if (isRecording) {
+        btn.title = '点击停止录音';
+    } else {
+        const langName = lang === 'zh-HK' ? '粤语' : '普通话';
+        btn.title = `语音输入（${langName}）`;
+    }
+}
+
+function toggleMic() {
+    if (isRecording) {
+        stopMic();
+    } else {
+        startMic();
+    }
+}
+
+function startMic() {
+    const lang = getInputLang();
+    if (!lang || !SpeechRecognition) return;
+
+    if (recognition) recognition.abort();
+
+    recognition = new SpeechRecognition();
+    recognition.lang = lang;
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    const textarea = document.getElementById('inputText');
+
+    recognition.onresult = (e) => {
+        let finalText = '';
+        let interimText = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) {
+                finalText += e.results[i][0].transcript;
+            } else {
+                interimText += e.results[i][0].transcript;
+            }
+        }
+        if (finalText) {
+            textarea.value = (textarea.value + finalText).trim();
+        }
+        const langName = lang === 'zh-HK' ? '粤语' : '普通话';
+        setStatus(`正在识别（${langName}）${interimText ? '：' + interimText : ''}...`, 'loading');
+    };
+
+    recognition.onend = () => {
+        isRecording = false;
+        updateMicBtn();
+        const langName = lang === 'zh-HK' ? '粤语' : '普通话';
+        if (textarea.value.trim()) {
+            setStatus(`语音识别完成（${langName}）`);
+        }
+    };
+
+    recognition.onerror = (e) => {
+        isRecording = false;
+        updateMicBtn();
+        if (e.error === 'not-allowed') {
+            setStatus('请允许使用麦克风权限', 'error');
+        } else if (e.error === 'no-speech') {
+            setStatus('未检测到语音', 'error');
+        } else if (e.error === 'network') {
+            setStatus('语音识别需要联网，请检查网络', 'error');
+        } else {
+            setStatus('语音识别失败：' + e.error, 'error');
+        }
+    };
+
+    isRecording = true;
+    updateMicBtn();
+    const langName = lang === 'zh-HK' ? '粤语' : '普通话';
+    setStatus(`正在听（${langName}），请说话...`, 'loading');
+    recognition.start();
+}
+
+function stopMic() {
+    if (recognition) {
+        recognition.stop();
+    }
+    isRecording = false;
+    updateMicBtn();
+    setStatus('已停止录音');
+}
+
+// ═══════════════════════════════════════════
+//  TTS 播报
+// ═══════════════════════════════════════════
+
+function selectVoice(idx) {
+    voiceIdx[currentMode] = idx;
+    // 刷新 chips 高亮
+    const dict = DICTS[currentMode];
+    document.querySelectorAll('#voiceChips .voice-chip').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+    });
+    setStatus(`已选音色：${dict.ttsVoices[idx].label}`);
+}
+
+function speakResult() {
+    const text = document.getElementById('outputText').textContent;
+    if (!text || text === '翻译结果将在这里显示...') return;
+
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
+    const btn = document.getElementById('ttsBtn');
+    const isD2P = direction === 'dialect_to_mandarin';
+
+    // 翻译结果是普通话 → 浏览器TTS
+    if (isD2P) {
+        speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.9;
+        utter.lang = 'zh-CN';
+        speechSynthesis.speak(utter);
+        setStatus('正在播报（普通话）...');
+        utter.onend = () => setStatus('播报完成');
+        utter.onerror = () => { setStatus('播报失败', 'error'); };
+        return;
+    }
+
+    // 翻译结果是方言 → 阿里云 TTS
+    const voice = getActiveVoice();
+    const dict = DICTS[currentMode];
+    const voiceLabel = dict.ttsVoices[voiceIdx[currentMode]].label;
+
+    btn.textContent = '⏳ 生成中...';
+    btn.disabled = true;
+    setStatus('正在生成语音...', 'loading');
+
+    fetch(`${PROXY_URL}/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, voice: voice })
+    })
+    .then(resp => {
+        if (!resp.ok) throw new Error('TTS 服务返回错误: ' + resp.status);
+        return resp.blob();
+    })
+    .then(blob => {
+        const audioUrl = URL.createObjectURL(blob);
+        currentAudio = new Audio(audioUrl);
+        currentAudio.onplay = () => setStatus(`正在播报（${voiceLabel}）...`);
+        currentAudio.onended = () => {
+            setStatus('播报完成');
+            btn.textContent = '🔊 方言播报';
+            btn.disabled = false;
+            URL.revokeObjectURL(audioUrl);
+        };
+        currentAudio.onerror = () => {
+            setStatus('播报失败', 'error');
+            btn.textContent = '🔊 方言播报';
+            btn.disabled = false;
+        };
+        currentAudio.play();
+    })
+    .catch(err => {
+        console.error('TTS Error:', err);
+        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+            setStatus('TTS 服务未启动，请先运行 tts_proxy.py', 'error');
+        } else {
+            setStatus('语音生成失败: ' + err.message, 'error');
+        }
+        btn.textContent = '🔊 方言播报';
+        btn.disabled = false;
+    });
+}
+
+// 加载语音列表
+speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+speechSynthesis.getVoices();
+
+// ═══════════════════════════════════════════
+//  状态
+// ═══════════════════════════════════════════
+function setStatus(text, type = 'ok') {
+    document.getElementById('statusText').textContent = text;
+    const dot = document.getElementById('statusDot');
+    dot.className = 'status-dot' + (type === 'loading' ? ' loading' : type === 'error' ? ' error' : '');
+}
+
+// ═══════════════════════════════════════════
+//  历史记录
+// ═══════════════════════════════════════════
+function addHistory(src, dst) {
+    history.unshift({
+        src, dst, mode: currentMode,
+        dir: direction,
+        time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    });
+    if (history.length > 30) history.pop();
+    localStorage.setItem('fangyan_history', JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const section = document.getElementById('historySection');
+    const list = document.getElementById('historyList');
+    if (history.length === 0) { section.style.display = 'none'; return; }
+
+    section.style.display = 'block';
+    list.innerHTML = history.slice(0, 15).map((h, i) => {
+        const modeName = h.mode === 'cantonese' ? '粤' : '潮';
+        const tagClass = h.mode === 'cantonese' ? 'tag-yue' : 'tag-cs';
+        const dirText = h.dir === 'dialect_to_mandarin' ? `${modeName}→普` : `普→${modeName}`;
+        return `
+        <div class="history-item" onclick="loadHistory(${i})">
+            <div>
+                <span class="src">${escHtml(h.src)}</span>
+                <span class="arrow">→</span>
+                <span class="dst">${escHtml(h.dst)}</span>
+            </div>
+            <div class="meta">${h.time} · ${dirText} <span class="mode-tag ${tagClass}">${modeName}</span></div>
+        </div>`;
+    }).join('');
+}
+
+function loadHistory(i) {
+    const h = history[i];
+    currentMode = h.mode;
+    direction = h.dir;
+    switchMode(currentMode);
+    direction = h.dir;
+    updateUI();
+    document.getElementById('inputText').value = h.src;
+    const out = document.getElementById('outputText');
+    out.textContent = h.dst;
+    out.classList.remove('empty');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearHistory() {
+    history = [];
+    localStorage.removeItem('fangyan_history');
+    renderHistory();
+    setStatus('历史已清空');
+}
+
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════
+//  快捷键
+// ═══════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        doTranslate();
+    }
+});
+
+// 初始化
+renderHistory();
+updateMicBtn();
+</script>
+
+</body>
+</html>
